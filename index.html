@@ -1,0 +1,138 @@
+<html>
+	<head>
+		<style type="text/css">
+			#mainBody
+			{
+				margin:auto;
+			}
+		</style>
+		<script type="text/javascript">
+			var selectedPiece = false;
+			var clientTurn = true;
+			//--------------------------------------------------------------
+			function loadXMLDoc( url, cfunc )
+			{
+				if ( window.XMLHttpRequest )
+					xmlhttp = new XMLHttpRequest( );
+				else
+					xmlhttp = new ActiveXObject( "Microsoft.XMLHTTP" );
+
+				xmlhttp.onreadystatechange = cfunc;
+				
+				//if 3rd parameter is false means make synchronous calls
+				xmlhttp.open( "GET", url, false );
+				xmlhttp.send( );
+			}	
+			//--------------------------------------------------------------
+			function movePiece( e )
+			{
+				if( selectedPiece == false || clientTurn == false )
+				{
+					return false;
+				}
+				var xCoor = e.getAttribute( "X" );
+				var yCoor = e.getAttribute( "Y" );
+				var toSquare = JSON.stringify( [xCoor, yCoor] );
+				xCoor = selectedPiece.getAttribute( "X" );
+				yCoor = selectedPiece.getAttribute( "Y" );
+				var fromSquare = JSON.stringify( [xCoor, yCoor] );
+				loadXMLDoc( "GameBoardMgr.php?action=movePiece" +
+													"&fromSquare=" + fromSquare +
+													"&toSquare=" + toSquare,
+							function( )
+							{
+								if( xmlhttp.readyState == 4 && xmlhttp.status == 200 )
+								{
+									//alert( xmlhttp.responseText);
+									var response = JSON.parse( xmlhttp.responseText );
+									if( response.good )
+									{
+										e.style.background = selectedPiece.style.background;
+										selectedPiece.style.background = "";
+										selectedPiece.style.opacity = 1; 
+										selectedPiece.style.filter = "alpha(opacity=100)"; 
+										document.body.style.cursor = 'default';
+										selectedPiece = false;
+									}
+									else
+									{
+										selectedPiece.style.opacity = 1; 
+										selectedPiece.style.filter = "alpha(opacity=100)"; 
+										document.body.style.cursor = 'default';
+										selectedPiece = false;
+										var error = document.getElementById( "error" );
+										error.innerHTML = response.error;
+									}
+								}				
+							} );
+			}
+			//--------------------------------------------------------------			
+			function selectPiece( e )
+			{
+				if( selectedPiece != false || clientTurn == false )
+				{
+					return;
+				}
+				var xCoor = e.getAttribute( "X" );
+				var yCoor = e.getAttribute( "Y" );
+				var square = [xCoor, yCoor];
+				square = JSON.stringify( square );
+				loadXMLDoc( "GameBoardMgr.php?action=selectPiece&" +
+													"square=" + square,
+							function( )
+							{
+								if( xmlhttp.readyState == 4 && xmlhttp.status == 200 )
+								{
+									//alert( xmlhttp.responseText);
+									var response = JSON.parse( xmlhttp.responseText );
+									if( response.good )
+									{
+										e.style.opacity = .0; 
+										e.style.filter = "alpha(opacity=0)"; 
+										document.body.style.cursor = e.style.background + " 32 32, auto";
+										selectedPiece = e;
+									}
+									else
+									{
+										var error = document.getElementById( "error" );
+										error.innerHTML = response.error;
+									}
+								}				
+							} );
+			}
+			//--------------------------------------------------------------
+			function select( e )
+			{
+				if( selectedPiece != false )
+				{
+					movePiece( e );
+				}
+				else
+				{
+					selectPiece( e );
+				}
+			}
+			//--------------------------------------------------------------
+			function startChessGame( )
+			{
+				loadXMLDoc( "GameBoardMgr.php?action=startChessGame",
+							function( )
+							{
+								if( xmlhttp.readyState == 4 && xmlhttp.status == 200 )
+								{
+									var gameTable = document.getElementById( "gameTable" );
+									gameTable.innerHTML = xmlhttp.responseText;
+								}				
+							} );
+			}
+		</script>
+	</head>
+	<body onload="startChessGame( );">
+		<table id="mainBody">
+			<tr>
+				<td id="gameTable"></td>
+			</tr>
+		</table>
+		<div id="error"></div>
+	</body>
+</html>
