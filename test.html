@@ -1,0 +1,52 @@
+<html>
+	<head>
+		<style>
+			#board
+			{
+				width:530px;
+				height:530px;
+				background:#8e8e88;
+				//cursor: url('BlackKnight.png'), auto;
+			}
+			
+			img
+			{
+				position:absolute;
+			}
+			
+		</style>
+		
+		<script type="text/javascript">
+			var pieceSelected = false;
+		
+			function moveImg( e )
+			{
+				e.style.display = 'none';
+				document.body.style.cursor = 'url(ChessPieces.png), auto';
+				pieceSelected = e;
+			}
+			
+			function placeImg( )
+			{
+				if( pieceSelected == false )
+				{
+					return;
+				}
+				pieceSelected.style.top = event.clientY - 16;
+				pieceSelected.style.left = event.clientX - 16;
+				pieceSelected.style.display = 'inline';
+				document.body.style.cursor = 'default';
+				pieceSelected = false;
+			}
+			
+		</script>
+	</head>
+	<body>
+		<div id="board" onmouseup="placeImg( );"></div>
+		<img style="display:inline;
+					top:128px;
+					left:128px;"
+			 onmousedown="moveImg( this );"
+			 src="BlackKnight.png"/>
+	</body>
+</html>
